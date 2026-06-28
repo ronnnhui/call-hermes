@@ -2,8 +2,6 @@
 
 Call Hermes 是一个面向 iPhone Safari/PWA 的实时语音对话项目。浏览器通过 WebRTC 将麦克风音频发送到 FastAPI 服务，服务端使用阿里云百炼完成实时语音识别和语音合成，并通过兼容 OpenAI Chat Completions 的 Hermes API 生成回复。
 
-本项目直接运行在宿主机上，不依赖 Docker。
-
 ## 功能
 
 - WebRTC 双向实时音频传输
