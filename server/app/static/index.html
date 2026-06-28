@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#101418" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Hermes" />
+    <title>Hermes</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icons/icon.svg" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="call-surface" aria-live="polite">
+        <div class="topbar">
+          <div>
+            <h1>Hermes</h1>
+            <p class="status-row"><span class="status-dot" aria-hidden="true"></span><span id="status">Ready</span></p>
+          </div>
+          <div class="topbar-actions">
+            <button id="deviceStatusText" class="device-pill" data-device="output" title="Choose microphone" type="button" aria-label="Choose microphone">
+              <span class="device-symbol" aria-hidden="true">
+                <svg class="device-phone-icon" viewBox="0 0 24 24" focusable="false">
+                  <rect x="7" y="2.5" width="10" height="19" rx="2.5"></rect>
+                  <path d="M10.5 5h3"></path>
+                  <path d="M11.25 18.5h1.5"></path>
+                </svg>
+                <svg class="device-bluetooth-icon" viewBox="0 0 24 24" focusable="false">
+                  <path d="M7 7.5l10 9-5 4v-17l5 4-10 9"></path>
+                </svg>
+              </span>
+              <span class="device-label">System audio</span>
+            </button>
+            <button id="settingsButton" class="icon-button" type="button" aria-label="Settings">
+              <span aria-hidden="true">⚙</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="meter" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+
+        <div class="transcript">
+          <div class="transcript-panel user-panel">
+            <span class="label">You</span>
+            <p id="transcriptText">-</p>
+          </div>
+          <div class="transcript-panel assistant-panel">
+            <span class="label">Hermes</span>
+            <p id="answerText">-</p>
+            <audio id="replyAudio" preload="none" playsinline></audio>
+          </div>
+        </div>
+
+        <form id="debugForm" class="debug-composer">
+          <textarea id="debugInput" rows="3" placeholder="输入测试文本"></textarea>
+          <button id="debugSendButton" type="submit">Send</button>
+          <button id="debugEndButton" type="button">End</button>
+        </form>
+
+        <div class="call-controls">
+          <button id="recordButton" class="record-button" type="button" aria-label="Record">
+            <span id="recordIcon" aria-hidden="true"></span>
+          </button>
+          <button id="replayButton" class="mic-button" type="button" aria-label="Mute microphone" disabled>
+            <span aria-hidden="true"></span>
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <dialog id="settingsDialog">
+      <form method="dialog" class="settings">
+        <button id="settingsFocusTarget" class="focus-target" type="button" aria-label="Settings panel"></button>
+        <h2>Connection</h2>
+        <label>
+          Bridge URL
+          <input id="bridgeUrlInput" type="url" autocomplete="url" />
+        </label>
+        <label>
+          Shared Secret
+          <input id="secretInput" type="password" autocomplete="current-password" />
+        </label>
+        <label>
+          Voice
+          <select id="ttsVoiceSelect"></select>
+          <span id="ttsVoiceDescription" class="voice-description"></span>
+        </label>
+        <label>
+          Playback Speed
+          <span class="range-row">
+            <input id="speechRateInput" type="range" min="0.5" max="2" step="0.05" />
+            <output id="speechRateValue" for="speechRateInput">1.00x</output>
+          </span>
+        </label>
+        <label class="toggle-row">
+          <input id="debugModeInput" type="checkbox" />
+          Debug mode
+        </label>
+        <menu>
+          <button value="cancel" type="submit">Cancel</button>
+          <button id="saveSettingsButton" value="default" type="button">Save</button>
+        </menu>
+      </form>
+    </dialog>
+
+    <dialog id="audioDeviceDialog">
+      <form method="dialog" class="settings device-picker">
+        <h2>Microphone</h2>
+        <p id="audioDeviceHelp" class="device-help">Choose the microphone used for this conversation.</p>
+        <div id="audioDeviceList" class="device-list" role="listbox" aria-label="Available microphones"></div>
+        <details class="device-debug">
+          <summary>Debug information</summary>
+          <pre id="debugText" class="debug-text">No debug information.</pre>
+        </details>
+        <menu>
+          <button value="cancel" type="submit">Cancel</button>
+        </menu>
+      </form>
+    </dialog>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

@@ -1,0 +1,254 @@
+from datetime import UTC, datetime
+from functools import lru_cache
+from pathlib import Path
+import ssl
+
+from pydantic import AnyHttpUrl, Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+TTS_VOICE_GROUPS: list[dict[str, object]] = [
+    {
+        "label": "女声",
+        "voices": [
+            {
+                "value": "Cherry",
+                "name": "芊悦",
+                "description": "阳光积极、亲切自然的小姐姐音色。",
+            },
+            {"value": "Serena", "name": "苏瑶", "description": "温柔自然的小姐姐音色。"},
+            {
+                "value": "Jennifer",
+                "name": "詹妮弗",
+                "description": "品牌级、电影质感般的美语女声。",
+            },
+            {"value": "Maia", "name": "四月", "description": "知性与温柔兼具的女声。"},
+            {
+                "value": "Sohee",
+                "name": "素熙",
+                "description": "温柔开朗、情绪丰富的韩系女声。",
+            },
+            {"value": "Sunny", "name": "四川-晴儿", "description": "甜美亲切的四川女声。"},
+        ],
+    },
+    {
+        "label": "男声",
+        "voices": [
+            {
+                "value": "Ethan",
+                "name": "晨煦",
+                "description": "标准普通话，带部分北方口音，阳光温暖、有活力。",
+            },
+            {
+                "value": "Nofish",
+                "name": "不吃鱼",
+                "description": "不会翘舌音的设计师男声。",
+            },
+            {
+                "value": "Ryan",
+                "name": "甜茶",
+                "description": "节奏感强、戏感鲜明、真实有张力的男声。",
+            },
+            {"value": "Bodega", "name": "博德加", "description": "热情的西班牙大叔音色。"},
+            {
+                "value": "Andre",
+                "name": "安德雷",
+                "description": "声音磁性、自然舒服、沉稳的男声。",
+            },
+            {
+                "value": "Radio Gol",
+                "name": "拉迪奥·戈尔",
+                "description": "足球解说风格，情绪饱满、有现场感。",
+            },
+            {
+                "value": "Dylan",
+                "name": "北京-晓东",
+                "description": "胡同里长大的北京小伙儿音色。",
+            },
+            {
+                "value": "Rocky",
+                "name": "粤语-阿强",
+                "description": "幽默风趣的粤语男声，适合轻松陪聊。",
+            },
+        ],
+    },
+]
+TTS_VOICE_OPTIONS: dict[str, str] = {
+    str(voice["value"]): str(voice["name"])
+    for group in TTS_VOICE_GROUPS
+    for voice in group["voices"]  # type: ignore[index]
+}
+MIN_TTS_SPEECH_RATE = 0.5
+MAX_TTS_SPEECH_RATE = 2.0
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+
+    public_base_url: AnyHttpUrl | str = "http://127.0.0.1:8080"
+    cors_allow_origins: str = ""
+    strict_config_validation: bool = False
+    app_shared_secret: str = Field(min_length=16)
+    jwt_secret: str = Field(min_length=16)
+    jwt_ttl_seconds: int = 900
+    auth_rate_limit_requests: int = 20
+    auth_rate_limit_window_seconds: int = 60
+
+    hermes_base_url: str = "http://127.0.0.1:8000"
+    hermes_api_key: str | None = None
+    hermes_model: str = "hermes"
+    hermes_timeout_seconds: float = 45
+    hermes_system_prompt: str | None = (
+        "【输出格式强制要求（最高优先级）】\n"
+        "你是一个语音助手，所有回复都将被TTS（文本转语音）系统朗读给用户听。"
+        "因此，你的输出必须严格遵守以下规则：\n\n"
+        "1. 纯文本输出：绝对禁止使用任何Markdown、HTML或格式化标记符号。"
+        "包括但不限于：井号、星号、横线、大于号、反引号、加粗标记、方括号链接等。\n"
+        "2. 使用自然口语：请用完整、流畅的句子表达。禁止使用项目符号列表（如“- 第一点”），"
+        "请改为“第一，”或“首先”等口语化连接词。\n"
+        "3. 结构化朗读：如果内容有层级，请使用“第一层是……，第二层是……”"
+        "或“首先……然后……最后……”等顺序词，而不是用标题或缩进。\n"
+        "4. 标点符号规范：仅使用句号、逗号、问号、叹号。"
+        "避免使用括号、分号、冒号，因为TTS会错误地停顿或朗读出来。\n"
+        "5. 禁止使用代码块：永远不要用反引号包裹任何内容。"
+        "如果需要提及文件名或专有名词，请直接写出，不要加任何符号。\n\n"
+        "【错误示例（禁止）】\n"
+        "**第一步**：打开设置。\n"
+        "- 第二步：点击 `确认按钮`。\n\n"
+        "【正确示例（必须模仿）】\n"
+        "第一步，打开设置。第二步，点击确认按钮。"
+    )
+
+    dashscope_api_key: str | None = None
+    dashscope_asr_model: str = "fun-asr-realtime"
+    dashscope_asr_ws_url: str = "wss://dashscope.aliyuncs.com/api-ws/v1/inference"
+    dashscope_tts_model: str = "qwen3-tts-flash-realtime"
+    dashscope_tts_ws_url: str = "wss://dashscope.aliyuncs.com/api-ws/v1/realtime"
+    dashscope_tts_voice: str = "Cherry"
+    dashscope_tts_speech_rate: float = 1.0
+    dashscope_tts_audio_timeout_seconds: float = 45
+
+    use_mock_asr: bool = False
+    use_mock_tts: bool = False
+    pwa_max_upload_bytes: int = 10_000_000
+    webrtc_audio_prebuffer_seconds: float = 0.5
+    auto_vad_enabled: bool = True
+    auto_vad_rms_threshold: float = 0.012
+    auto_vad_silence_ms: int = 1000
+    auto_vad_min_speech_ms: int = 80
+    barge_in_min_chars: int = 3
+    barge_in_cooldown_ms: int = 500
+
+    ice_stun_urls: str = "stun:stun.l.google.com:19302"
+    ice_turn_urls: str = ""
+    ice_turn_internal_urls: str = ""
+    ice_turn_username: str = ""
+    ice_turn_credential: str = ""
+
+    ssl_cert_file: str = "../ssl/fullchain.pem"
+    ssl_key_file: str = "../ssl/privkey.pem"
+
+    @property
+    def ice_servers(self) -> list[dict[str, object]]:
+        return self._ice_servers(self.ice_turn_urls)
+
+    @property
+    def server_ice_servers(self) -> list[dict[str, object]]:
+        return self._ice_servers(self.ice_turn_internal_urls or self.ice_turn_urls)
+
+    def _ice_servers(self, turn_urls: str) -> list[dict[str, object]]:
+        servers: list[dict[str, object]] = []
+        if self.ice_stun_urls:
+            servers.append({"urls": [url.strip() for url in self.ice_stun_urls.split(",") if url.strip()]})
+        if turn_urls:
+            servers.append(
+                {
+                    "urls": [url.strip() for url in turn_urls.split(",") if url.strip()],
+                    "username": self.ice_turn_username,
+                    "credential": self.ice_turn_credential,
+                }
+            )
+        return servers
+
+    @property
+    def cors_origins(self) -> list[str]:
+        if self.cors_allow_origins:
+            return [origin.strip() for origin in self.cors_allow_origins.split(",") if origin.strip()]
+        return [str(self.public_base_url).rstrip("/")]
+
+    @property
+    def turn_configured(self) -> bool:
+        return bool(self.ice_turn_urls and self.ice_turn_username and self.ice_turn_credential)
+
+    @property
+    def turn_config_warning(self) -> str | None:
+        has_any = bool(self.ice_turn_urls or self.ice_turn_username or self.ice_turn_credential)
+        if not has_any:
+            return "TURN is not configured; cellular or restrictive NAT networks may be unstable."
+        if not self.turn_configured:
+            return "TURN config is incomplete; set ICE_TURN_URLS, ICE_TURN_USERNAME, and ICE_TURN_CREDENTIAL."
+        return None
+
+    def diagnostics(self) -> dict[str, object]:
+        checks: dict[str, dict[str, object]] = {
+            "dashscope_api_key": {
+                "ok": bool(self.use_mock_asr and self.use_mock_tts) or bool(self.dashscope_api_key),
+                "detail": "configured" if self.dashscope_api_key else "missing unless both mocks are enabled",
+            },
+            "hermes_base_url": {"ok": bool(self.hermes_base_url), "detail": self.hermes_base_url},
+            "jwt_secret": {"ok": len(self.jwt_secret) >= 16, "detail": "min_length=16"},
+            "app_shared_secret": {"ok": len(self.app_shared_secret) >= 16, "detail": "min_length=16"},
+            "turn": {
+                "ok": self.turn_configured,
+                "detail": self.turn_config_warning or "configured",
+            },
+            "ssl_cert_file": {
+                **_ssl_cert_check(self.ssl_cert_file),
+            },
+            "ssl_key_file": {
+                "ok": Path(self.ssl_key_file).exists(),
+                "detail": self.ssl_key_file,
+            },
+        }
+        errors = [
+            name
+            for name, check in checks.items()
+            if not check["ok"] and name not in {"turn", "ssl_key_file"}
+        ]
+        warnings = [
+            name
+            for name, check in checks.items()
+            if not check["ok"] and name in {"turn", "ssl_key_file"}
+        ]
+        return {"ok": not errors, "checks": checks, "errors": errors, "warnings": warnings}
+
+    def strict_errors(self) -> list[str]:
+        diagnostics = self.diagnostics()
+        errors = list(diagnostics["errors"])
+        if not self.turn_configured:
+            errors.append("turn")
+        return errors
+
+
+@lru_cache
+def get_settings() -> Settings:
+    return Settings()
+
+
+def _ssl_cert_check(cert_file: str) -> dict[str, object]:
+    path = Path(cert_file)
+    if not path.exists():
+        return {"ok": False, "detail": f"{cert_file} missing"}
+    try:
+        decoded = ssl._ssl._test_decode_cert(str(path))  # type: ignore[attr-defined]
+        not_after = datetime.strptime(decoded["notAfter"], "%b %d %H:%M:%S %Y %Z").replace(tzinfo=UTC)
+    except Exception as exc:
+        return {"ok": False, "detail": f"{cert_file} unreadable: {exc}"}
+    now = datetime.now(UTC)
+    remaining = not_after - now
+    if remaining.total_seconds() <= 0:
+        return {"ok": False, "detail": f"{cert_file} expired at {not_after.isoformat()}"}
+    return {
+        "ok": True,
+        "detail": f"{cert_file} expires at {not_after.isoformat()} ({remaining.days} days left)",
+    }

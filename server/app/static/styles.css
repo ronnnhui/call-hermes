@@ -1,0 +1,785 @@
+:root {
+  color-scheme: dark;
+  --bg: #0f1214;
+  --panel: #171d20;
+  --panel-2: #20272b;
+  --panel-3: #11171a;
+  --text: #f6f8f7;
+  --muted: #9ba7a7;
+  --line: #2e393d;
+  --green: #20a66a;
+  --red: #df5b57;
+  --blue: #4b93d1;
+  --amber: #d5a449;
+  --shadow: rgb(0 0 0 / 34%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overscroll-behavior: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.shell {
+  height: 100svh;
+  padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
+  display: grid;
+  place-items: center;
+}
+
+.call-surface {
+  width: min(100%, 520px);
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  gap: 18px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.topbar-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 36px;
+  line-height: 1;
+  font-weight: 740;
+}
+
+.status-row {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--muted);
+  box-shadow: 0 0 0 4px rgb(155 167 167 / 10%);
+}
+
+body[data-status="listening"] .status-dot {
+  background: var(--green);
+  box-shadow: 0 0 0 4px rgb(32 166 106 / 16%);
+}
+
+body[data-status="speaking"] .status-dot,
+body[data-status="busy"] .status-dot {
+  background: var(--blue);
+  box-shadow: 0 0 0 4px rgb(75 147 209 / 16%);
+}
+
+body[data-status="muted"] .status-dot {
+  background: var(--amber);
+  box-shadow: 0 0 0 4px rgb(213 164 73 / 16%);
+}
+
+body[data-status="error"] .status-dot {
+  background: var(--red);
+  box-shadow: 0 0 0 4px rgb(223 91 87 / 16%);
+}
+
+.icon-button {
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 8px 22px rgb(0 0 0 / 18%);
+}
+
+.device-pill {
+  width: 42px;
+  min-width: 42px;
+  min-height: 42px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.device-pill:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.device-symbol {
+  position: relative;
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+}
+
+.device-symbol svg {
+  grid-area: 1 / 1;
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.device-bluetooth-icon {
+  display: none;
+}
+
+.device-pill[data-device="headset"] {
+  color: var(--blue);
+}
+
+.device-pill[data-device="headset"] .device-phone-icon {
+  display: none;
+}
+
+.device-pill[data-device="headset"] .device-bluetooth-icon {
+  display: block;
+}
+
+.device-pill[data-device="muted"] {
+  color: var(--amber);
+}
+
+.device-pill[data-device="muted"] .device-symbol::after {
+  content: "";
+  position: absolute;
+  width: 28px;
+  height: 3px;
+  border-radius: 999px;
+  background: currentColor;
+  transform: rotate(-42deg);
+}
+
+.device-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.device-help {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.device-list {
+  display: grid;
+  gap: 8px;
+}
+
+.device-debug {
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.device-debug summary {
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.device-option {
+  width: 100%;
+  min-height: 52px;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: var(--panel-2);
+  color: var(--text);
+  text-align: left;
+}
+
+.device-option[aria-selected="true"] {
+  border-color: var(--blue);
+}
+
+.device-option-icon {
+  width: 16px;
+  height: 22px;
+  border: 2px solid currentColor;
+  border-radius: 8px;
+  color: var(--muted);
+}
+
+.device-option[aria-selected="true"] .device-option-icon,
+.device-check {
+  color: var(--blue);
+}
+
+.device-check {
+  visibility: hidden;
+  font-size: 18px;
+  text-align: center;
+}
+
+.device-option[aria-selected="true"] .device-check {
+  visibility: visible;
+}
+
+.meter {
+  height: 72px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.meter span {
+  width: 8px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--muted);
+  opacity: 0.38;
+  transform-origin: center;
+}
+
+.voice-active .meter span {
+  background: var(--blue);
+  opacity: 0.72;
+  animation: pulse 820ms ease-in-out infinite;
+}
+
+.voice-active .meter span:nth-child(2) {
+  animation-delay: 100ms;
+}
+
+.voice-active .meter span:nth-child(3) {
+  animation-delay: 200ms;
+}
+
+.voice-active .meter span:nth-child(4) {
+  animation-delay: 300ms;
+}
+
+.voice-active .meter span:nth-child(5) {
+  animation-delay: 400ms;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scaleY(0.75);
+  }
+  50% {
+    transform: scaleY(2.6);
+  }
+}
+
+.transcript {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.calling .transcript {
+  padding-bottom: 132px;
+}
+
+.debug-mode .transcript {
+  padding-bottom: 180px;
+}
+
+.transcript-panel {
+  min-height: 116px;
+  padding: 15px 16px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: 0 10px 26px rgb(0 0 0 / 16%);
+}
+
+.assistant-panel {
+  min-height: 164px;
+  background: var(--panel-3);
+}
+
+.label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.transcript p {
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  font-size: 16px;
+}
+
+.debug-text {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+#replyAudio {
+  /* Keep in the DOM and accessibility tree so iOS Safari treats the
+     element as a real audio sink and grants programmatic play() after
+     the user taps Record. `display: none` causes autoplay to be rejected. */
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.debug-composer {
+  display: none;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.debug-mode .debug-composer {
+  position: fixed;
+  left: 50%;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 21;
+  width: min(calc(100% - 28px), 520px);
+  display: grid;
+  padding: 12px;
+  border: 1px solid rgb(255 255 255 / 5%);
+  border-radius: 8px;
+  background: rgb(15 18 20 / 86%);
+  box-shadow: 0 18px 54px rgb(0 0 0 / 36%);
+  backdrop-filter: blur(12px);
+  transform: translateX(-50%);
+}
+
+.debug-composer textarea {
+  width: 100%;
+  min-height: 64px;
+  max-height: 140px;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: var(--panel-2);
+  color: var(--text);
+  font: inherit;
+  line-height: 1.4;
+}
+
+.debug-composer button {
+  min-height: 44px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 14px;
+  background: var(--blue);
+  color: var(--text);
+}
+
+#debugEndButton {
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+}
+
+.call-controls {
+  justify-self: center;
+  width: min(100%, 320px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+.record-button {
+  width: 112px;
+  height: 112px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--green);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 20px 48px var(--shadow);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    opacity 160ms ease;
+}
+
+.record-button:active,
+.mic-button:active,
+.icon-button:active {
+  transform: scale(0.97);
+}
+
+.record-button:disabled {
+  opacity: 0.55;
+}
+
+#recordIcon {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: white;
+}
+
+#recordIcon::before {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border-radius: 50%;
+  background: var(--green);
+}
+
+.calling .record-button {
+  display: none;
+}
+
+.fallback-mode .record-button {
+  display: none;
+}
+
+.mic-button {
+  position: relative;
+  width: 86px;
+  height: 86px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--panel);
+  display: none;
+  place-items: center;
+  color: var(--text);
+  box-shadow: 0 16px 44px var(--shadow);
+  transition:
+    transform 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.calling .call-controls {
+  position: fixed;
+  left: 50%;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 20;
+  width: 104px;
+  min-height: 104px;
+  transform: translateX(-50%);
+  display: grid;
+  place-items: center;
+}
+
+.fallback-mode .call-controls {
+  position: fixed;
+  left: 50%;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 20;
+  width: 104px;
+  min-height: 104px;
+  transform: translateX(-50%);
+  display: grid;
+  place-items: center;
+}
+
+.debug-mode .call-controls {
+  display: none;
+}
+
+.calling .call-controls::before,
+.fallback-mode .call-controls::before {
+  content: "";
+  position: absolute;
+  inset: -16px -32px;
+  border: 1px solid rgb(255 255 255 / 4%);
+  border-radius: 999px;
+  background: rgb(15 18 20 / 72%);
+  box-shadow: 0 18px 54px rgb(0 0 0 / 36%);
+  backdrop-filter: blur(12px);
+}
+
+.calling .mic-button {
+  display: grid;
+  z-index: 1;
+}
+
+.fallback-mode .mic-button {
+  display: grid;
+  z-index: 1;
+}
+
+.fallback-recording .mic-button {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.mic-button span {
+  position: relative;
+  width: 28px;
+  height: 40px;
+  border: 4px solid currentColor;
+  border-radius: 16px;
+  transform: translateY(-8px);
+}
+
+.mic-button span::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -18px;
+  width: 4px;
+  height: 14px;
+  border-radius: 999px;
+  background: currentColor;
+  transform: translateX(-50%);
+}
+
+.mic-button span::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -20px;
+  width: 34px;
+  height: 18px;
+  border: 4px solid currentColor;
+  border-top: 0;
+  border-radius: 0 0 18px 18px;
+  transform: translateX(-50%);
+}
+
+.mic-button:disabled {
+  opacity: 0.35;
+}
+
+.mic-button:disabled span {
+  color: var(--muted);
+}
+
+.muted .mic-button {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.muted .mic-button::after {
+  content: "";
+  position: absolute;
+  width: 68px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--red);
+  transform: rotate(-42deg);
+}
+
+dialog {
+  position: fixed;
+  inset: 50% auto auto 50%;
+  width: min(calc(100vw - 28px), 420px);
+  max-width: 420px;
+  max-height: min(calc(100dvh - 36px), 720px);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0;
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: 0 28px 80px rgb(0 0 0 / 44%);
+  overflow: hidden;
+  transform: translate(-50%, -50%);
+}
+
+dialog::backdrop {
+  background: rgb(0 0 0 / 55%);
+}
+
+.settings {
+  width: 100%;
+  max-height: min(calc(100dvh - 36px), 720px);
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.focus-target {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  border: 0;
+  padding: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.settings label {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.settings input,
+.settings select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 12px;
+  background: var(--panel-2);
+  color: var(--text);
+}
+
+.settings select {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 18px,
+    calc(100% - 12px) 18px;
+  background-size:
+    6px 6px,
+    6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 36px;
+}
+
+.range-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 58px;
+  align-items: center;
+  gap: 12px;
+}
+
+.settings input[type="range"] {
+  padding: 0;
+  accent-color: var(--blue);
+}
+
+.settings output {
+  color: var(--text);
+  font-size: 14px;
+  text-align: right;
+}
+
+.toggle-row {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+}
+
+.toggle-row input {
+  width: 22px;
+  min-height: 22px;
+  accent-color: var(--blue);
+}
+
+.voice-description {
+  min-height: 38px;
+  padding: 10px 12px;
+  border: 1px solid rgb(255 255 255 / 5%);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 3%);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.settings menu {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+}
+
+.settings button {
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 14px;
+  background: var(--panel-2);
+  color: var(--text);
+}
+
+#saveSettingsButton {
+  border-color: transparent;
+  background: var(--blue);
+}
+
+@media (max-width: 380px) {
+  .shell {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  h1 {
+    font-size: 32px;
+  }
+
+  .record-button {
+    width: 104px;
+    height: 104px;
+  }
+}

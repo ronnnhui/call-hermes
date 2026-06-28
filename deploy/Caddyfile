@@ -1,0 +1,14 @@
+{$DOMAIN:hermes.example.com} {
+  tls /etc/caddy/ssl/fullchain.pem /etc/caddy/ssl/privkey.pem
+  encode zstd gzip
+
+  @rtc path /rtc/*
+  reverse_proxy @rtc voice-bridge:8080
+
+  reverse_proxy voice-bridge:8080
+
+  log {
+    output stdout
+    format console
+  }
+}

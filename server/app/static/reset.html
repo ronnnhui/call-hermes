@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#101418" />
+    <title>Reset Hermes</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #101418;
+        color: #f4f6f7;
+      }
+
+      body {
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        margin: 0;
+        padding: 24px;
+      }
+
+      main {
+        width: min(100%, 420px);
+      }
+
+      h1 {
+        margin: 0 0 12px;
+        font-size: 24px;
+      }
+
+      p {
+        color: #a6b0b8;
+        line-height: 1.6;
+      }
+
+      a {
+        color: #69a7ff;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Resetting Hermes</h1>
+      <p id="status">正在清理旧的 PWA 缓存...</p>
+      <p><a href="/">返回 Hermes</a></p>
+    </main>
+    <script>
+      (async () => {
+        const status = document.querySelector("#status");
+        try {
+          if ("serviceWorker" in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(registrations.map((registration) => registration.unregister()));
+          }
+          if (window.caches?.keys) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map((key) => caches.delete(key)));
+          }
+          status.textContent = "清理完成，正在返回 Hermes...";
+          window.setTimeout(() => {
+            window.location.replace("/");
+          }, 600);
+        } catch (error) {
+          status.textContent = `清理失败：${error?.message || error}`;
+        }
+      })();
+    </script>
+  </body>
+</html>

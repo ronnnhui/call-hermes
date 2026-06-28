@@ -1,0 +1,37 @@
+services:
+  voice-bridge:
+    build:
+      context: ../server
+    env_file:
+      - ../server/.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:8080:8080"
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ../ssl:/etc/caddy/ssl:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - voice-bridge
+
+  coturn:
+    image: coturn/coturn:4.6
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./turnserver.conf:/etc/coturn/turnserver.conf:ro
+    command: ["-c", "/etc/coturn/turnserver.conf"]
+
+volumes:
+  caddy_data:
+  caddy_config:

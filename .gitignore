@@ -1,0 +1,19 @@
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+*.egg-info/
+
+# local secrets
+.env
+server/.env
+*.pid
+*.log
+server/logs/
+ssl/*.key
+ssl/*.pem
+ssl/*.crt
